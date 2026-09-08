@@ -1,7 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import * as helmetModule from 'helmet'
-import * as rateLimitModule from 'express-rate-limit'
+import { createRequire } from 'node:module'
 import { config } from './config.js'
 import authRoutes from './routes/auth.js'
 import categoryRoutes from './routes/categories.js'
@@ -11,11 +10,20 @@ import adminRoutes from './routes/admin.js'
 import healthRoutes from './routes/health.js'
 import { connectDatabase } from './db.js'
 
+const require = createRequire(import.meta.url)
+const helmet = require('helmet') as (options?: Record<string, unknown>) => express.RequestHandler
+const rateLimit = require('express-rate-limit') as (options: {
+  windowMs: number
+  limit: number
+  standardHeaders: 'draft-7'
+  legacyHeaders: boolean
+}) => express.RequestHandler
+
 const app = express()
-app.use(helmetModule.default())
+app.use(helmet())
 app.use(cors({ origin: '*' }))
 app.use(express.json({ limit: '10kb' }))
-app.use(rateLimitModule.default({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-7', legacyHeaders: false }))
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-7', legacyHeaders: false }))
 
 app.get('/api', (_req, res) => res.json({ success: true, message: 'Clothing Store API', data: { version: '1.0.0' } }))
 app.use('/api/auth', authRoutes)
