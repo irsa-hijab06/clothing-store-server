@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
-import helmet from 'helmet'
-import rateLimit from 'express-rate-limit'
+import * as helmetModule from 'helmet'
+import * as rateLimitModule from 'express-rate-limit'
 import { config } from './config.js'
 import authRoutes from './routes/auth.js'
 import categoryRoutes from './routes/categories.js'
@@ -12,10 +12,10 @@ import healthRoutes from './routes/health.js'
 import { connectDatabase } from './db.js'
 
 const app = express()
-app.use(helmet())
-app.use(cors({ origin: config.clientOrigin, credentials: true }))
+app.use(helmetModule.default())
+app.use(cors({ origin: '*' }))
 app.use(express.json({ limit: '10kb' }))
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-7', legacyHeaders: false }))
+app.use(rateLimitModule.default({ windowMs: 15 * 60 * 1000, limit: 100, standardHeaders: 'draft-7', legacyHeaders: false }))
 
 app.get('/api', (_req, res) => res.json({ success: true, message: 'Clothing Store API', data: { version: '1.0.0' } }))
 app.use('/api/auth', authRoutes)
